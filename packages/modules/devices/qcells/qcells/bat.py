@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-from typing import Dict, Union
+import logging
+from typing import Dict, Optional, Union
 
 from dataclass_utils import dataclass_from_dict
 from modules.common.abstract_device import AbstractBat
@@ -9,6 +10,8 @@ from modules.common.fault_state import ComponentInfo, FaultState
 from modules.common.modbus import ModbusDataType, ModbusTcpClient_
 from modules.common.store import get_bat_value_store
 from modules.devices.qcells.qcells.config import QCellsBatSetup
+
+log = logging.getLogger(__name__)
 
 
 class QCellsBat(AbstractBat):
@@ -35,6 +38,15 @@ class QCellsBat(AbstractBat):
             exported=exported
         )
         self.store.set(bat_state)
+
+    def set_power_limit(self, power_limit: Optional[int]) -> None:
+        # power limit None heißt, auf maximale Speicherleistung setzen = Speicher-Begrenzung aufheben
+        try:
+            client = ModbusTcpClient_(self.component_config.configuration.ip_address,
+                                      self.component_config.configuration.port)
+            client.connect()
+        except Exception:
+            log.exception("Fehler in create_device")
 
 
 component_descriptor = ComponentDescriptor(configuration_factory=QCellsBatSetup)
