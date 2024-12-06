@@ -44,9 +44,15 @@ class QCellsBat(AbstractBat):
         try:
             client = ModbusTcpClient_(self.component_config.configuration.ip_address,
                                       self.component_config.configuration.port)
-            client.connect()
+            invertertype = client.read_input_registers(0x007E, ModbusDataType.UINT_16, unit=self.__modbus_id)
+            log.info("Invertype: " + 
+                     str(invertertype))
+            if invertertype == "Gen4":
+                client.write_single_register(0x0014, power_limit, unit=self.__modbus_id)
+            else:
+                log.info("Keine kompatible Batterie vorhanden")
         except Exception:
-            log.exception("Fehler in create_device")
+            log.exception("Fehler in set_power_limit")
 
 
 component_descriptor = ComponentDescriptor(configuration_factory=QCellsBatSetup)
