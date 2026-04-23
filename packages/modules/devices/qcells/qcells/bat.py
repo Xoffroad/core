@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 # Solax/QCells Mode 1 Remote Control Registers (Holding Registers)
 # Speichersteuerung via Active Power Sollwert.
-REMOTE_CONTROL_MODE_REG = 0x7C           # U16: 0=Disabled, 1=Enabled Power Control
+REMOTE_CONTROL_MODE_REG = 0x7C           # U16: 0=Disabled, 12=Enabled Battery Control
 REMOTE_CONTROL_SET_TYPE_REG = 0x7D       # U16: 1=Set
 REMOTE_CONTROL_ACTIVE_POWER_REG = 0x7E   # S32: Active Power Sollwert in Watt
 REMOTE_CONTROL_REACTIVE_POWER_REG = 0x80  # S32: Reactive Power Sollwert (0)
@@ -29,7 +29,7 @@ REMOTE_CONTROL_TARGET_POWER_REG = 0x86   # S32: Target Charge/Discharge Power (D
 REMOTE_CONTROL_TIMEOUT_REG = 0x88        # U16: Timeout in Sekunden (0 = deaktiviert)
 
 MODE_1_DISABLED = 0
-MODE_1_ENABLED_POWER_CONTROL = 1
+MODE_1_ENABLED_BATTERY_CONTROL = 12
 SET_TYPE_SET = 1
 MIN_REMOTE_CONTROL_DURATION = 20
 DURATION_SAFETY_BUFFER = 10
@@ -135,13 +135,13 @@ class QCellsBat(AbstractBat):
         """Schreibt die Mode 1 Remote Control Register (0x7C-0x88)."""
         duration = self._get_mode1_duration()
         log.debug((
-            f"QCells Mode1 write: mode={MODE_1_ENABLED_POWER_CONTROL}, set_type={SET_TYPE_SET}, "
+            f"QCells Mode1 write: mode={MODE_1_ENABLED_BATTERY_CONTROL}, set_type={SET_TYPE_SET}, "
             f"active_power={ap_target}W, reactive_power=0var, duration={duration}s, "
             f"target_soc=0, target_energy=0Wh, target_power=0W, timeout={MODE_1_TIMEOUT_DISABLED}s"
         ))
         with self.client:
             self.client.write_register(
-                REMOTE_CONTROL_MODE_REG, MODE_1_ENABLED_POWER_CONTROL,
+                REMOTE_CONTROL_MODE_REG, MODE_1_ENABLED_BATTERY_CONTROL,
                 data_type=ModbusDataType.UINT_16, unit=unit)
             self.client.write_register(
                 REMOTE_CONTROL_SET_TYPE_REG, SET_TYPE_SET,
